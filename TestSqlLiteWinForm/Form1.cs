@@ -57,26 +57,6 @@ namespace TestSqlLiteWinForm
             connection.Clone();
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-
-            if (!File.Exists(SQL_NAME))
-            {
-                SQLiteConnection.CreateFile(SQL_NAME);
-
-                SQLiteConnection connection = new SQLiteConnection(SQL_CONNECTION);
-
-                connection.Open();
-                string sql = "create table counter (name varchar(20), oneInput decimal, twoInput decimal, output decimal)";
-
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-
-                command.ExecuteNonQuery();
-
-                connection.Clone();
-            }
-        }
-
         private void showHistory_Click(object sender, EventArgs e)
         {
             StringBuilder builder = new StringBuilder();
@@ -102,6 +82,66 @@ namespace TestSqlLiteWinForm
             }
 
             richTextBox1.Text = builder.ToString();
+        }
+
+        private void inGridBtn_Click(object sender, EventArgs e)
+        {
+            var builder = new StringBuilder();
+
+            using (var connection = new SQLiteConnection(SQL_CONNECTION))
+            {
+                connection.Open();
+
+                string sql = "SELECT * FROM counter";
+
+                var command = new SQLiteCommand(sql, connection);
+
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    dataGridView1.Rows
+                        .Add(reader.GetString(0), reader.GetDecimal(1), reader.GetDecimal(2), reader.GetDecimal(3));
+                }
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            if (!File.Exists(SQL_NAME))
+            {
+                SQLiteConnection.CreateFile(SQL_NAME);
+
+                SQLiteConnection connection = new SQLiteConnection(SQL_CONNECTION);
+
+                connection.Open();
+                string sql = "create table counter (name varchar(20), oneInput decimal, twoInput decimal, output decimal)";
+
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+
+                command.ExecuteNonQuery();
+
+                connection.Clone();
+            }
+
+            //numericUpDown1.ValueChanged += NumericUpDownValueChanged;
+            numericUpDown2.ValueChanged += NumericUpDownValueChanged;
+        }
+
+        private void NumericUpDownValueChanged(object sender, EventArgs e)
+        {
+            NumericUpDown element = (NumericUpDown) sender;
+
+            if (element.Value == 0)
+            {
+                button1.Enabled = false;
+                errorLabel.Visible = true;
+            }
+            else
+            {
+                button1.Enabled = true;
+                errorLabel.Visible = false;
+            }
         }
     }
 }
